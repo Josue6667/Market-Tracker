@@ -1,0 +1,35 @@
+name: Wallapop Seiko Monitor
+
+on:
+  schedule:
+    - cron: '0 * * * *' # Se ejecuta cada hora (puedes ajustarlo)
+  workflow_dispatch: # Permite ejecutarlo manualmente para probar
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Ejecutar Scraper
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node scraper.js
+
+      - name: Guardar historial (Commit)
+        run: |
+          git config --global user.name "Wallapop Bot"
+          git config --global user.email "bot@github.com"
+          git add history.json
+          git commit -m "Update history [skip ci]" || echo "No hay cambios para guardar"
+          git push
